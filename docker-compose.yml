@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+ web: 
+  build: .
+  env_file:
+   - .env
+  ports: 
+   - "8080:8080"
+  volumes: 
+   - .:/usr/local/app
+  depends_on:
+   - db
+  networks:
+   - fullstack
+  command: go run main.go
+ db:
+   image: postgres:alpine 
+   environment:
+    - POSTGRES_USER=${DB_USER}
+    - POSTGRES_PASSWORD=${DB_PASSWORD}
+    - POSTGRES_DB=${DB_NAME}
+    - DATABASE_HOST=${DB_HOST} 
+   ports: 
+    - "5432:5432"
+   volumes:
+    - postgres-db:/var/lib/postgresql/data
+   networks:
+    - fullstack    
+ pgadmin:
+   image: dpage/pgadmin4
+   container_name: pgadmin_container
+   environment:
+    - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+    - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+   depends_on:
+    - db
+   ports:
+    - "5050:80"
+   networks:
+    - fullstack
+   restart: unless-stopped
+
+volumes:
+   postgres-db:
+
+networks:
+  fullstack:
+    driver: bridge
